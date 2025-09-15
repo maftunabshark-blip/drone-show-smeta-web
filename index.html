@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Drone Show Smeta — Mobile</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --ink:#0b1220;
+    --sub:#576077;
+    --brand:#2563eb;
+    --brand-2:#1e40af;
+    --ok:#16a34a;
+    --shadow:0 10px 24px rgba(20,38,70,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.35;
+  }
+  .wrap{max-width:1060px;margin:24px auto;padding:12px}
+  header{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+  .logo{
+    width:44px;height:44px;flex:0 0 44px;border-radius:10px;background:
+      radial-gradient(120% 120% at 0% 0%, #4f9ee3 0, #0c69c7 48%, #063876 100%);
+    display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:.5px;box-shadow:var(--shadow)
+  }
+  .brand h1{font-size:18px;margin:0}
+  .brand small{color:var(--sub)}
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+  @media (max-width: 880px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;
+  }
+  .title{font-size:14px;font-weight:700;margin-bottom:14px;color:var(--sub);text-transform:uppercase;letter-spacing:.07em}
+  .row{display:grid;grid-template-columns:1fr 140px;gap:10px;align-items:center;margin:10px 0}
+  label{font-size:14px}
+  input[type=number]{
+    width:100%;height:40px;border:1px solid #e5e7ef;border-radius:12px;padding:0 12px;font-size:15px;background:#f8f9ff;
+    outline:none;
+  }
+  input[type=number]:focus{border-color:#cbd5ff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .btn{
+    appearance:none;border:0;border-radius:12px;padding:10px 14px;font-weight:600;background:#eef2ff;color:#1e3a8a;cursor:pointer
+  }
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.primary:active{transform:translateY(1px)}
+  .meta{margin-top:12px;color:var(--sub);font-size:13px}
+  .ok{color:var(--ok);font-weight:600}
+  .tot-title{font-size:15px;color:var(--sub);margin-top:4px}
+  .amount{font-size:42px;font-weight:900;letter-spacing:.5px;margin:6px 0 10px}
+  .hr{height:1px;background:linear-gradient(90deg,#e9ecf7,transparent);margin:12px 0}
+  .note{font-size:13px;color:var(--sub)}
+  .muted{color:var(--sub)}
+  .footer-logo{
+    margin-top:12px;padding-top:10px;border-top:1px dashed #e5e7ef;display:flex;justify-content:flex-start;align-items:center;gap:10px
+  }
+  .footer-logo img{height:28px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">DS</div>
+      <div class="brand">
+        <h1>Drone Show Smeta</h1>
+        <small class="muted">Mobil kalkulyator (V4, Y2 · CBU kursi bilan)</small>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: Inputs -->
+      <section class="card">
+        <div class="title">Parametrlar</div>
+
+        <div class="row">
+          <label for="v4">Dron V4 (dona)</label>
+          <input id="v4" type="number" min="0" step="1" value="100">
+        </div>
+
+        <div class="row">
+          <label for="y2">Dron Y2 (dona)</label>
+          <input id="y2" type="number" min="0" step="1" value="0">
+        </div>
+
+        <div class="row">
+          <label for="fig">Figuralar soni</label>
+          <input id="fig" type="number" min="1" step="1" value="1">
+        </div>
+
+        <div class="row">
+          <label for="price">Narx (USD / dron / figura)</label>
+          <input id="price" type="number" min="0" step="0.5" value="2">
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnRate">CBU kursini yangilash</button>
+          <button class="btn" id="btnReset">Tozalash</button>
+        </div>
+
+        <div class="meta">
+          <div>Status: <span id="status" class="ok">OK</span></div>
+          <div>Kurs: <span id="rateTxt" class="muted">USD→UZS: —</span></div>
+        </div>
+
+        <div class="footer-logo">
+          <!-- O‘zingizning logoni qo‘ying (PNG) -->
+          <img id="orgLogo" src="https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/apachecordova.svg"
+               alt="logo"
+               onerror="this.style.display='none'">
+          <span class="muted">GEO Innovation Centre</span>
+        </div>
+      </section>
+
+      <!-- RIGHT: Totals -->
+      <section class="card">
+        <div class="title">Natija</div>
+
+        <div class="tot-title">Jami (USD):</div>
+        <div class="amount" id="usd">$ 0,00</div>
+        <div class="hr"></div>
+
+        <div class="tot-title">Jami (UZS):</div>
+        <div class="amount" id="uzs">UZS 0</div>
+
+        <div class="note">Formula: <span class="muted">(V4 + Y2) × narx × figuralar</span>.</div>
+      </section>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Elements
+  const el = id => document.getElementById(id);
+  const v4 = el('v4'), y2 = el('y2'), fig = el('fig'), price = el('price');
+  const usd = el('usd'), uzs = el('uzs'), rateTxt = el('rateTxt'), status = el('status');
+  const btnRate = el('btnRate'), btnReset = el('btnReset');
+
+  // State (localStorage bilan saqlaymiz)
+  let state = {
+    v4: +localStorage.getItem('v4') || 100,
+    y2: +localStorage.getItem('y2') || 0,
+    fig: +localStorage.getItem('fig') || 1,
+    price: +localStorage.getItem('price') || 2,
+    rate: +localStorage.getItem('rate') || 12447.35
+  };
+
+  // init UI
+  v4.value = state.v4; y2.value = state.y2; fig.value = state.fig; price.value = state.price;
+  drawRate(); compute();
+
+  // listeners
+  [v4,y2,fig,price].forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const n = +inp.value || 0;
+      state[inp.id] = n;
+      localStorage.setItem(inp.id, n);
+      compute();
+    });
+  });
+
+  btnReset.addEventListener('click', ()=>{
+    state = { v4:100, y2:0, fig:1, price:2, rate:12447.35 };
+    ['v4','y2','fig','price','rate'].forEach(k => localStorage.setItem(k, state[k]));
+    v4.value=state.v4; y2.value=state.y2; fig.value=state.fig; price.value=state.price;
+    drawRate(); compute();
+  });
+
+  btnRate.addEventListener('click', fetchCBU);
+
+  function compute(){
+    try{
+      const drones = Math.max(0, state.v4) + Math.max(0, state.y2);
+      const perFigure = Math.max(0, state.price);
+      const figures = Math.max(1, state.fig);
+      const totalUsd = drones * perFigure * figures;
+      const totalUzs = totalUsd * Math.max(0.01, state.rate);
+
+      usd.textContent = fmtUsd(totalUsd);
+      uzs.textContent = fmtUzs(totalUzs);
+      status.textContent = 'OK';
+      status.classList.add('ok');
+    }catch(e){
+      status.textContent = 'Xatolik';
+      status.classList.remove('ok');
+      console.error(e);
+    }
+  }
+
+  function drawRate(){
+    rateTxt.textContent = 'USD→UZS: ' + new Intl.NumberFormat('uz-UZ',{maximumFractionDigits:2}).format(state.rate);
+  }
+
+  // CBU/valyuta kursi (CORS ochiq, tez va barqaror)
+  async function fetchCBU(){
+    try{
+      btnRate.disabled = true;
+      btnRate.textContent = 'Yuklanmoqda…';
+      // exchangerate.host – USD bazadan UZS kurs
+      const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=UZS');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const usdToUzs = data && data.rates && data.rates.UZS ? +data.rates.UZS : NaN;
+      if(!usdToUzs || !isFinite(usdToUzs)) throw new Error('Kutilmagan javob');
+      state.rate = usdToUzs;
+      localStorage.setItem('rate', state.rate);
+      drawRate(); compute();
+      btnRate.textContent = 'CBU kursi yangilandi ✓';
+      setTimeout(()=>{ btnRate.textContent='CBU kursini yangilash'; btnRate.disabled=false; }, 900);
+    }catch(err){
+      alert('Kurs olinmadi. Internetni tekshirib qayta urining.\nSabab: ' + err.message);
+      btnRate.textContent='CBU kursini yangilash'; btnRate.disabled=false;
+    }
+  }
+
+  function fmtUsd(x){ return new Intl.NumberFormat('uz-UZ',{style:'currency',currency:'USD'}).format(x); }
+  function fmtUzs(x){ return 'UZS ' + new Intl.NumberFormat('uz-UZ',{maximumFractionDigits:0}).format(x); }
+})();
+</script>
+</body>
+</html>
