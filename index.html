@@ -89,64 +89,7 @@
 
 <script>
 (() => {
-  // ====== i18n ======
-  const i18n = {
-    uz: {
-      app:'Drone Show Smeta • Web',
-      inputs:'Kiritmalar',
-      v4:'Dron V4 (dona)',
-      y2:'Dron Y2 (dona)',
-      fig:'Figuralar soni',
-      price:'Narx (USD / dron / figura)',
-      refresh:'CBU kursini yangilash',
-      clear:'Tozalash',
-      rate:'Kurs: USD→UZS:',
-      logo:'GEO Innovation Centre',
-      total_usd:'Jami (USD):',
-      total_uzs:'Jami (UZS):',
-      formula:'Formula: (V4 + Y2) × narx × figuralar.',
-      fetching:'Kurs olinmoqda…',
-      ok:'OK (yangilandi)',
-      err_prefix:'Kurs olinmadi. Internetni tekshiring. Sabab:'
-    },
-    ru: {
-      app:'Drone Show Smeta • Web',
-      inputs:'Ввод данных',
-      v4:'Дрон V4 (шт.)',
-      y2:'Дрон Y2 (шт.)',
-      fig:'Количество фигур',
-      price:'Цена (USD / дрон / фигура)',
-      refresh:'Обновить курс ЦБУ',
-      clear:'Очистить',
-      rate:'Курс: USD→UZS:',
-      logo:'GEO Innovation Centre',
-      total_usd:'Итого (USD):',
-      total_uzs:'Итого (UZS):',
-      formula:'Формула: (V4 + Y2) × цена × фигуры.',
-      fetching:'Загружаем курс…',
-      ok:'OK (обновлено)',
-      err_prefix:'Курс не получен. Проверьте интернет. Причина:'
-    },
-    en: {
-      app:'Drone Show Smeta • Web',
-      inputs:'Inputs',
-      v4:'Drone V4 (qty)',
-      y2:'Drone Y2 (qty)',
-      fig:'Figures count',
-      price:'Price (USD / drone / figure)',
-      refresh:'Refresh CBU rate',
-      clear:'Clear',
-      rate:'Rate: USD→UZS:',
-      logo:'GEO Innovation Centre',
-      total_usd:'Total (USD):',
-      total_uzs:'Total (UZS):',
-      formula:'Formula: (V4 + Y2) × price × figures.',
-      fetching:'Fetching rate…',
-      ok:'OK (updated)',
-      err_prefix:'Failed to get rate. Check internet. Reason:'
-    }
-  };
-
+  // ====== HOLAT ======
   const el = id => document.getElementById(id);
   const v4 = el('v4'), y2 = el('y2'), fig = el('fig'), price = el('price');
   const usdTotal = el('usdTotal'), uzsTotal = el('uzsTotal');
@@ -154,11 +97,37 @@
   const btnRefresh = el('btnRefresh'), btnClear = el('btnClear');
   const langSel = el('langSel');
 
+  // Avval rate va tilni e'lon qilamiz
+  let rate = Number(localStorage.getItem('cbu_rate_usd_uzs') || 0);
+  let lang = localStorage.getItem('dss_lang') || 'uz';
+
+  // ====== i18n matnlar ======
+  const i18n = {
+    uz: { app:'Drone Show Smeta • Web', inputs:'Kiritmalar', v4:'Dron V4 (dona)',
+      y2:'Dron Y2 (dona)', fig:'Figuralar soni', price:'Narx (USD / dron / figura)',
+      refresh:'CBU kursini yangilash', clear:'Tozalash', rate:'Kurs: USD→UZS:',
+      logo:'GEO Innovation Centre', total_usd:'Jami (USD):', total_uzs:'Jami (UZS):',
+      formula:'Formula: (V4 + Y2) × narx × figuralar.', fetching:'Kurs olinmoqda…',
+      ok:'OK (yangilandi)', err_prefix:'Kurs olinmadi. Sabab:' },
+    ru: { app:'Drone Show Smeta • Web', inputs:'Ввод данных', v4:'Дрон V4 (шт.)',
+      y2:'Дрон Y2 (шт.)', fig:'Количество фигур', price:'Цена (USD / дрон / фигура)',
+      refresh:'Обновить курс ЦБУ', clear:'Очистить', rate:'Курс: USD→UZS:',
+      logo:'GEO Innovation Centre', total_usd:'Итого (USD):', total_uzs:'Итого (UZS):',
+      formula:'Формула: (V4 + Y2) × цена × фигуры.', fetching:'Загружаем курс…',
+      ok:'OK (обновлено)', err_prefix:'Курс не получен. Причина:' },
+    en: { app:'Drone Show Smeta • Web', inputs:'Inputs', v4:'Drone V4 (qty)',
+      y2:'Drone Y2 (qty)', fig:'Figures count', price:'Price (USD / drone / figure)',
+      refresh:'Refresh CBU rate', clear:'Clear', rate:'Rate: USD→UZS:',
+      logo:'GEO Innovation Centre', total_usd:'Total (USD):', total_uzs:'Total (UZS):',
+      formula:'Formula: (V4 + Y2) × price × figures.', fetching:'Fetching rate…',
+      ok:'OK (updated)', err_prefix:'Failed to get rate. Reason:' }
+  };
+
   const fUSD = new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' });
   const fUZS = new Intl.NumberFormat('uz-UZ', { style:'currency', currency:'UZS', maximumFractionDigits:0 });
 
-  // ====== Til holati ======
-  function applyLang(lang) {
+  // ====== UI matnlarini qo'llash ======
+  function applyLang() {
     const t = i18n[lang] || i18n.uz;
     el('t_app').textContent = t.app;
     el('t_inputs').textContent = t.inputs;
@@ -168,98 +137,73 @@
     el('t_price').textContent = t.price;
     btnRefresh.textContent = t.refresh;
     btnClear.textContent = t.clear;
-    rateLbl.textContent = `${t.rate} ${rate ? rate.toLocaleString('uz-UZ',{maximumFractionDigits:2}) : '—'}`;
     el('t_logoText').textContent = t.logo;
     el('t_total_usd').textContent = t.total_usd;
     el('t_total_uzs').textContent = t.total_uzs;
     el('t_formula').textContent = t.formula;
-    recalc();
+    // rate mavjud bo'lsa ko'rsatamiz
+    rateLbl.textContent = `${t.rate} ${rate ? rate.toLocaleString('uz-UZ',{maximumFractionDigits:2}) : '—'}`;
   }
 
-  langSel.value = localStorage.getItem('dss_lang') || 'uz';
-  applyLang(langSel.value);
-  langSel.addEventListener('change', () => {
-    localStorage.setItem('dss_lang', langSel.value);
-    applyLang(langSel.value);
-  });
-
-  // ====== Hisob ======
-  let rate = Number(localStorage.getItem('cbu_rate_usd_uzs') || 0);
-
+  // ====== Hisob-kitob ======
+  function num(v){ const n = Number(v); return Number.isFinite(n) ? n : 0; }
   function recalc() {
-    const v = Number(v4.value||0) + Number(y2.value||0);
-    const p = Number(price.value||0);
-    const n = Number(fig.value||0);
-    const totalUsd = v * p * n;
+    const totalUsd = (num(v4.value) + num(y2.value)) * num(price.value) * num(fig.value);
     usdTotal.textContent = fUSD.format(totalUsd || 0);
-    const t = i18n[langSel.value] || i18n.uz;
     if (rate) {
-      const totalUzs = totalUsd * rate;
-      uzsTotal.textContent = fUZS.format(totalUzs||0);
-      rateLbl.textContent = `${t.rate} ${rate.toLocaleString('uz-UZ',{maximumFractionDigits:2})}`;
+      uzsTotal.textContent = fUZS.format(totalUsd * rate);
     } else {
-      uzsTotal.textContent = (langSel.value==='ru') ? '0 сум' : (langSel.value==='en' ? '0 UZS' : '0 so‘m');
-      rateLbl.textContent = `${t.rate} —`;
+      uzsTotal.textContent = (lang==='ru') ? '0 сум' : (lang==='en' ? '0 UZS' : "0 so‘m");
     }
   }
-  [v4, y2, fig, price].forEach(inp => inp.addEventListener('input', recalc));
 
-  // ====== CBU kursi (keshdan qochish, timeout, retry) ======
+  // ====== Kursni olish (CBU) ======
   async function fetchWithTimeout(url, ms=8000, opts={}) {
-    const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), ms);
-    try {
-      return await fetch(url, { ...opts, signal: ctrl.signal });
-    } finally {
-      clearTimeout(t);
-    }
+    const ctrl = new AbortController(); const to = setTimeout(()=>ctrl.abort(), ms);
+    try { return await fetch(url, { ...opts, signal: ctrl.signal }); }
+    finally { clearTimeout(to); }
   }
-
   async function fetchCbuRate() {
-    const t = i18n[langSel.value] || i18n.uz;
+    const t = i18n[lang] || i18n.uz;
     statusLbl.textContent = t.fetching; statusLbl.className='status';
-
     const url = "https://cbu.uz/uz/arkhiv-kursov-valyut/json/USD/";
-    const opts = { headers:{'Accept':'application/json'}, cache:'no-store' };
-
     try {
-      let res = await fetchWithTimeout(url, 8000, opts);
+      const res = await fetchWithTimeout(url, 9000, { cache:'no-store', headers:{'Accept':'application/json'} });
       if (!res.ok) throw new Error("HTTP "+res.status);
-      let data = await res.json();
-      if (!Array.isArray(data) || !data.length || !data.at(-1)?.Rate) throw new Error("No UZS");
-      rate = parseFloat(String(data.at(-1).Rate).replace(",", "."));
-      if (!Number.isFinite(rate)) throw new Error("Bad rate");
-
+      const data = await res.json();
+      const last = Array.isArray(data) ? data[data.length-1] : null;
+      const r = last && last.Rate ? parseFloat(String(last.Rate).replace(",", ".")) : NaN;
+      if (!Number.isFinite(r)) throw new Error("Bad rate");
+      rate = r;
       localStorage.setItem('cbu_rate_usd_uzs', String(rate));
       statusLbl.textContent = t.ok; statusLbl.className='status ok';
-      recalc();
     } catch (e) {
-      // Bitta qayta urinish
-      try {
-        let res = await fetchWithTimeout(url, 8000, opts);
-        if (!res.ok) throw new Error("HTTP "+res.status);
-        let data = await res.json();
-        rate = parseFloat(String(data.at(-1).Rate).replace(",", "."));
-        localStorage.setItem('cbu_rate_usd_uzs', String(rate));
-        statusLbl.textContent = t.ok; statusLbl.className='status ok';
-        recalc();
-      } catch (e2) {
-        statusLbl.textContent = `${t.err_prefix} ${e2.message}`;
-        statusLbl.className='status err';
-        recalc();
-      }
+      statusLbl.textContent = `${t.err_prefix} ${e.message}`; statusLbl.className='status err';
+    } finally {
+      applyLang(); // rate label yangilansin
+      recalc();
     }
   }
 
-  btnRefresh.addEventListener('click', (ev)=>{ ev.preventDefault(); fetchCbuRate(); });
-  btnClear.addEventListener('click', (ev)=>{ ev.preventDefault(); v4.value=0;y2.value=0;fig.value=1;price.value=0; recalc(); });
+  // ====== Eventlar ======
+  [v4, y2, fig, price].forEach(inp => inp.addEventListener('input', recalc));
+  btnRefresh.addEventListener('click', e => { e.preventDefault(); fetchCbuRate(); });
+  btnClear.addEventListener('click', e => { e.preventDefault(); v4.value=0; y2.value=0; fig.value=1; price.value=0; recalc(); });
 
-  // Boshlanish
+  langSel.value = lang;
+  langSel.addEventListener('change', () => {
+    lang = langSel.value;
+    localStorage.setItem('dss_lang', lang);
+    applyLang(); recalc();
+  });
+
+  // ====== Boshlang'ich render ======
+  applyLang();
   recalc();
 
-  // Service worker (ixtiyoriy, lekin GitHub Pages uchun foydali)
+  // ====== Service Worker (ixtiyoriy) ======
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=104').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js?v=106').catch(()=>{});
   }
 })();
 </script>
