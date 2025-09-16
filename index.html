@@ -1,177 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Drone Show Smeta — Web</title>
-  <link rel="icon" href="./apple-touch-icon.png">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drone Show Smeta • Web</title>
+
+  <!-- Faviconlar (ixtiyoriy) -->
+  <link rel="icon" href="./apple-touch-icon.ico">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
   <style>
-    :root{--card:#fff;--ink:#111;--muted:#6b7280;--bg:#f3f4f6;--brand:#2563eb}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
-    .app{display:grid;grid-template-columns:1fr 1fr;gap:24px} @media (max-width:900px){.app{grid-template-columns:1fr}}
-    .card{background:var(--card);border-radius:20px;box-shadow:0 10px 26px rgba(0,0,0,.06);padding:20px}
-    h1{margin:0 0 12px} label{display:block;margin:10px 0 4px;color:var(--muted);font-size:14px}
-    input[type=number]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:10px 14px;cursor:pointer}
-    .btn:disabled{opacity:.6} .muted{color:var(--muted);font-size:14px}
-    .bigUSD{font-size:44px;font-weight:800;margin:8px 0}
-    .bigUZS{font-size:40px;font-weight:900;margin:8px 0}
-    .footer{display:flex;align-items:center;gap:10px;margin-top:12px}
-    .footer img{height:40px}
-    select{padding:8px 10px;border-radius:10px;border:1px solid #e5e7eb}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    :root { --bg:#0f172a10; --card:#ffffff; --muted:#64748b; --brand:#1f2937; }
+    *{box-sizing:border-box} body{margin:0;font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    .wrap{max-width:1100px;margin:40px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    .card{background:var(--card);border-radius:18px;box-shadow:0 10px 30px #0f172a18;padding:28px}
+    h1{margin:0 0 16px 0;font-size:28px}
+    label{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px}
+    input{width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:10px;font-size:16px}
+    .row{display:flex;gap:12px;margin-top:16px}
+    button{padding:12px 16px;border:0;border-radius:12px;background:#26334d;color:#fff;font-weight:600;cursor:pointer}
+    button.secondary{background:#0f172a20;color:#0f172a}
+    .note{margin-top:12px;color:#6b7280;font-size:14px}
+    .total h2{font-size:42px;margin:8px 0}
+    .muted{color:var(--muted)}
+    .brand{color:var(--brand)}
+    .logoBox{margin-top:18px;display:flex;align-items:center;gap:10px}
+    .logoBox img{height:54px;width:auto;display:block}
+    .status{margin-top:10px;font-size:14px}
+    .ok{color:#15803d}.err{color:#b91c1c}
+    @media (max-width:860px){ .grid{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <div><strong>Drone Show Smeta · Web</strong> — <span id="status" class="muted">OK</span></div>
-    <div>
-      <select id="lang">
-        <option value="uz">O‘zbekcha</option>
-        <option value="ru">Русский</option>
-        <option value="en">English</option>
-      </select>
+  <div class="wrap">
+    <h1>Drone Show Smeta • <span class="muted">Web</span> <span id="busy" class="muted">— Yuklanmoqda…</span></h1>
+
+    <div class="grid">
+      <!-- Chap panel -->
+      <div class="card">
+        <h2 class="brand" style="margin:0 0 8px">Kiritmalar</h2>
+
+        <label for="v4">Dron V4 (dona)</label>
+        <input id="v4" type="number" min="0" step="1" value="1000">
+
+        <label for="y2">Dron Y2 (dona)</label>
+        <input id="y2" type="number" min="0" step="1" value="100">
+
+        <label for="fig">Figuralar soni</label>
+        <input id="fig" type="number" min="1" step="1" value="1">
+
+        <label for="price">Narx (USD / dron / figura)</label>
+        <input id="price" type="number" min="0" step="0.01" value="70">
+
+        <div class="row">
+          <button id="btnRefresh">CBU kursini yangilash</button>
+          <button id="btnClear" class="secondary">Tozalash</button>
+        </div>
+
+        <div class="logoBox">
+          <img src="./icons/geo_logo.png" alt="GEO Innovation Centre logotipi">
+          <div class="muted">GEO Innovation Centre</div>
+        </div>
+
+        <div class="note" id="rateLbl">Kurs: USD→UZS: —</div>
+        <div class="status" id="statusLbl"></div>
+      </div>
+
+      <!-- O‘ng panel -->
+      <div class="card total">
+        <h2 class="brand" style="margin:0">Jami (USD):</h2>
+        <h2 id="usdTotal">$ 0.00</h2>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+        <h2 class="brand" style="margin:0">Jami (UZS):</h2>
+        <h2 id="uzsTotal">0 so‘m</h2>
+        <div class="note">Formula: (V4 + Y2) × narx × figuralar.</div>
+      </div>
     </div>
   </div>
 
-  <div class="app">
-    <div class="card">
-      <h1 id="t_title">Drone Show Smeta</h1>
-
-      <label id="t_v4">Dron V4 (dona)</label>
-      <input id="v4" type="number" value="0" min="0"/>
-
-      <label id="t_y2">Dron Y2 (dona)</label>
-      <input id="y2" type="number" value="0" min="0"/>
-
-      <label id="t_fig">Figuralar soni</label>
-      <input id="fig" type="number" value="1" min="1"/>
-
-      <label id="t_price">Narx (USD / dron / figura)</label>
-      <input id="price" type="number" value="2" min="0" step="0.01"/>
-
-      <div class="row" style="margin-top:12px">
-        <button class="btn" id="btnRate" onclick="updateRate()"></button>
-        <button class="btn" style="background:#6b7280" onclick="resetForm()" id="btnReset"></button>
-      </div>
-
-      <div class="footer">
-        <img src="./apple-touch-icon.png" alt="logo">
-        <span class="muted">GEO Innovation Centre</span>
-      </div>
-
-      <div style="margin-top:8px" class="muted">
-        <div id="kursLine">Kurs: USD→UZS: <span id="kurs">–</span></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div id="t_total_usd" class="muted">Jami (USD):</div>
-      <div id="usd" class="bigUSD">$ 0.00</div>
-      <div id="t_total_uzs" class="muted" style="margin-top:12px">Jami (UZS):</div>
-      <div id="uzs" class="bigUZS">0 so‘m</div>
-      <div class="muted" style="margin-top:8px" id="formula"></div>
-    </div>
-  </div>
-</div>
-
 <script>
-/* ===== Til lug‘ati (web) ===== */
-const i18n = {
-  uz: {
-    title:"Drone Show Smeta",
-    v4:"Dron V4 (dona)", y2:"Dron Y2 (dona)", fig:"Figuralar soni",
-    price:"Narx (USD / dron / figura)", btnRate:"CBU kursini yangilash", btnReset:"Tozalash",
-    total_usd:"Jami (USD):", total_uzs:"Jami (UZS):", formula:"Formula: (V4 + Y2) × narx × figuralar.",
-    currencyLine:"Kurs: USD→UZS: "
-  },
-  ru: {
-    title:"Drone Show Smeta",
-    v4:"Дрон V4 (шт)", y2:"Дрон Y2 (шт)", fig:"Кол-во фигур",
-    price:"Цена (USD / дрон / фигура)", btnRate:"Обновить курс CBU", btnReset:"Очистить",
-    total_usd:"Итого (USD):", total_uzs:"Итого (UZS):", formula:"Формула: (V4 + Y2) × цена × фигуры.",
-    currencyLine:"Курс: USD→UZS: "
-  },
-  en: {
-    title:"Drone Show Smeta",
-    v4:"Drone V4 (pcs)", y2:"Drone Y2 (pcs)", fig:"Figures",
-    price:"Price (USD / drone / figure)", btnRate:"Refresh CBU rate", btnReset:"Reset",
-    total_usd:"Total (USD):", total_uzs:"Total (UZS):", formula:"Formula: (V4 + Y2) × price × figures.",
-    currencyLine:"Rate: USD→UZS: "
+(() => {
+  const el = id => document.getElementById(id);
+  const v4 = el('v4'), y2 = el('y2'), fig = el('fig'), price = el('price');
+  const usdTotal = el('usdTotal'), uzsTotal = el('uzsTotal');
+  const rateLbl = el('rateLbl'), statusLbl = el('statusLbl'), busy = el('busy');
+  const btnRefresh = el('btnRefresh'), btnClear = el('btnClear');
+
+  // Valyuta formatlari
+  const fUSD = new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' });
+  const fUZS = new Intl.NumberFormat('uz-UZ', { style:'currency', currency:'UZS', maximumFractionDigits:0 });
+
+  let rate = Number(localStorage.getItem('cbu_rate_usd_uzs') || 0);
+
+  function recalc() {
+    const v = Number(v4.value||0) + Number(y2.value||0);
+    const p = Number(price.value||0);
+    const n = Number(fig.value||0);
+    const totalUsd = v * p * n;
+    const totalUzs = totalUsd * (rate||0);
+    usdTotal.textContent = fUSD.format(totalUsd || 0);
+    uzsTotal.textContent = rate ? fUZS.format(totalUzs||0) : "0 so‘m";
   }
-};
 
-let rate = 12447.35; // fallback
-
-function applyLang(l){
-  const t = i18n[l] || i18n.uz;
-  t_title.textContent=t.title; t_v4.textContent=t.v4; t_y2.textContent=t.y2;
-  t_fig.textContent=t.fig; t_price.textContent=t.price;
-  btnRate.textContent=t.btnRate; btnReset.textContent=t.btnReset;
-  t_total_usd.textContent=t.total_usd; t_total_uzs.textContent=t.total_uzs;
-  formula.textContent=t.formula;
-  document.getElementById('kursLine').firstChild.textContent = t.currencyLine;
-  calc();
-  localStorage.setItem('lang', l);
-}
-lang.value = localStorage.getItem('lang') || 'uz';
-lang.addEventListener('change', e=>applyLang(e.target.value));
-applyLang(lang.value);
-
-/* ===== Hisoblash ===== */
-['v4','y2','fig','price'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', calc);
-});
-function calc(){
-  const v4=+v4_input.value||0, y2v=+y2.value||0, f=+fig.value||0, p=+price.value||0;
-}
-</script>
-<script>
-const v4_input=document.getElementById('v4');
-function calc(){
-  const v4=+document.getElementById('v4').value||0;
-  const y2v=+document.getElementById('y2').value||0;
-  const f=+document.getElementById('fig').value||0;
-  const p=+document.getElementById('price').value||0;
-  const usdTotal=(v4+y2v)*f*p;
-  const uzsTotal=usdTotal*rate;
-  document.getElementById('usd').textContent="$ "+usdTotal.toFixed(2);
-  document.getElementById('uzs').textContent=(Math.round(uzsTotal)).toLocaleString('uz-UZ')+" so‘m";
-}
-
-/* ===== Kurs (CORS-friendly API) =====
-   CBU o‘rniga exchangerate.host: HTTPS + CORS ✅ */
-async function updateRate(){
-  btnRate.disabled=true; document.getElementById('status').textContent='Yuklanmoqda...';
-  try{
-    const res=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=UZS',{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(!data || !data.rates || !data.rates.UZS) throw new Error('No UZS');
-    rate = Number(data.rates.UZS);
-    document.getElementById('kurs').textContent=rate.toFixed(2);
-    document.getElementById('status').textContent='OK';
-    calc();
-  }catch(e){
-    alert('Kurs olinmadi. Internetni tekshirib qayta urin.\nSabab: '+e.message);
-    document.getElementById('status').textContent='Xato';
-  }finally{
-    btnRate.disabled=false;
-  }
-}
-function resetForm(){
-  v4.value=0; y2.value=0; fig.value=1; price.value=2; calc();
-}
-window.addEventListener('load',()=>{ document.getElementById('kurs').textContent=rate.toFixed(2); calc(); });
-
-/* Service worker ixtiyoriy; agar ishlatmoqchi bo‘lsang, sw.js bilan ro‘yxatdan o‘tkazadi */
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-</script>
-</body>
-</html>
+  async function fetchCbuRate() {
+    statusLbl.textContent = "Kurs olinmoqda…";
+    statusLbl.className = "status";
+    try {
+      // CBU HTTPS JSON, keshni chetlash: no-store. (GitHub Pages + SW muammosidan qochish uchun)
+      const url = "https://cbu.uz/uz/arkhiv-kursov-valyut/json/USD/";
+      const res = await fetch(url, { headers:{'Accept':'application/json'}, cache:'no-store' });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length || !data.at(-1).Rate) throw new Error("No UZS");
+      rate = parseFloat(String(data.at(-1).Rate).replace(",", "."));
+      if (!Number.isFinite(rate)) throw new Error("Bad rate");
+      localStorage.setItem('cbu_rate_usd_uzs', String(rate));
+      rateLbl.textContent = `Kurs: USD→UZS: ${rate.toLocaleString('uz-UZ', {maximumFractionDigits:2})}`;
+      statusLbl.textContent = "OK (yangilandi)";
+      statusLbl.className = "status ok";
+      recalc();
+    } catch (e) {
+      // Fallback: localStorage bor bo‘lsa, shuni ishlatamiz
+      if (rate) {
